@@ -2,13 +2,14 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>限定聊天室</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport 設置 -->
+  <title>澆水團聊天室</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Courier New', Courier, monospace; /* 使用等寬字型 */
-      background: linear-gradient(160deg, #0d1b2a, #1b263b, #415a77); /* 高級藍黑漸層背景 */
-      color: #00FF00; /* 綠色字體 */
+      font-family: 'Courier New', Courier, monospace;
+      background: linear-gradient(160deg, #0d1b2a, #1b263b, #415a77);
+      color: #00FF00;
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -39,13 +40,13 @@
       flex-direction: column;
       padding: 16px;
       overflow-y: auto;
-      background-color: #111; /* 深黑背景 */
+      background-color: #111;
     }
 
     #rules {
       padding: 10px;
       margin-bottom: 12px;
-      background-color: rgba(0, 255, 0, 0.3); /* 半透明的綠色背景 */
+      background-color: rgba(0, 255, 0, 0.3);
       color: #00FF00;
       font-weight: bold;
       border-radius: 8px;
@@ -65,12 +66,12 @@
     }
 
     .user-msg {
-      color: #00FF00; /* 綠色文字 */
+      color: #00FF00;
     }
 
     #online-users {
       width: 220px;
-      background-color: #111; /* 深黑背景 */
+      background-color: #111;
       padding: 20px;
       border-left: 1px solid #333;
       overflow-y: auto;
@@ -123,7 +124,7 @@
       flex: 1;
       font-size: 16px;
       background-color: #2a2a3a;
-      color: #00FF00; /* 綠色文字 */
+      color: #00FF00;
     }
 
     #nickname { max-width: 160px; }
@@ -146,6 +147,49 @@
       box-shadow: 0 0 10px #00FF00;
     }
 
+    /* 媒體查詢：螢幕寬度小於 768px（手機）時調整 */
+    @media (max-width: 768px) {
+      #online-users {
+        width: 100%;
+        padding: 10px;
+      }
+
+      #chat-container {
+        flex-direction: column;
+      }
+
+      #input-container {
+        flex-direction: column;
+        padding: 8px;
+      }
+
+      #nickname, #input {
+        margin-right: 0;
+        margin-bottom: 8px;
+      }
+
+      #send {
+        width: 100%;
+        padding: 12px;
+      }
+    }
+
+    /* 媒體查詢：螢幕寬度小於 480px（小手機）時調整 */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 24px;
+        padding: 8px 0;
+      }
+
+      #messages-container {
+        padding: 10px;
+      }
+
+      #input-container {
+        padding: 6px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -153,7 +197,7 @@
 
   <div id="chat-container">
     <div id="messages-container">
-      <div id="rules">此為12人制測試聊天室，進來打暱稱訊息，我確認完最後會打上鎮號密碼，無法打字代表已滿人</div>
+      <div id="rules">⚠️ 此為12人制測試聊天室，進來打暱稱訊息，我確認完最後會打上鎮號密碼，無法打字代表已滿人</div>
       <div id="messages"></div>
     </div>
 
