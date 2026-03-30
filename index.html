@@ -5,54 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>澆水團聊天室</title>
 <style>
-  html,body{margin:0;padding:0;font-family:'Courier New',Courier,monospace;background:linear-gradient(160deg,#0d1b2a,#1b263b,#415a77);color:#00FF00;}
+  html,body{margin:0;padding:0;font-family:'Courier New',Courier,monospace;background:linear-gradient(160deg,#0d1b2a,#1b263b,#415a77);color:#00FF00;height:100%;}
   body{display:flex;flex-direction:column;min-height:100vh;}
-  h1{text-align:center;padding:12px 0;margin:0;background-color:#121212;border-bottom:1px solid #333;text-shadow:0 0 6px #00FF00;font-size:24px;}
+  h1{text-align:center;padding:12px 0;margin:0;background:#121212;border-bottom:1px solid #333;text-shadow:0 0 6px #00FF00;}
   #chat-container{flex:1;display:flex;flex-direction:row;min-height:0;}
-  #messages-container{flex:1;display:flex;flex-direction:column;padding:12px;overflow-y:auto;background-color:#111;min-height:0;}
-  #rules{padding:10px;margin-bottom:12px;background-color:rgba(0,255,0,0.3);border-radius:8px;text-align:center;}
+  #messages-container{flex:1;display:flex;flex-direction:column;padding:12px;overflow-y:auto;background:#111;min-height:0;}
   .message{margin:6px 0;padding:8px 12px;border-radius:8px;}
-  #online-users{width:180px;background-color:#111;padding:10px;border-left:1px solid #333;overflow-y:auto;}
-  #online-users h3{text-align:center;}
-  #user-list{list-style:none;padding:0;}
-  #input-container{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid #333;background-color:#121212;padding:8px;flex-shrink:0;}
-  #nickname,#input{flex:1;padding:10px;border-radius:6px;border:none;background:#2a2a3a;color:#00FF00;font-size:16px;}
-  #nickname{max-width:120px;}
-  #send{padding:10px;border:none;border-radius:6px;background-color:#00FF00;font-weight:bold;cursor:pointer;}
-  @media(max-width:768px){#chat-container{flex-direction:column;}#online-users{width:100%;border-left:none;border-top:1px solid #333;}#nickname{max-width:100%;}#send{width:100%;}}
+  #online-users{width:180px;background:#111;padding:10px;border-left:1px solid #333;overflow-y:auto;}
+  #input-container{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid #333;background:#121212;padding:8px;flex-shrink:0;}
+  #nickname,#input{flex:1;padding:10px;border:none;border-radius:6px;background:#2a2a3a;color:#00FF00;font-size:16px;}
+  #send{padding:10px;border:none;border-radius:6px;background:#00FF00;font-weight:bold;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<h1>澆水團臨時聊天室</h1>
+<h1>澆水團聊天室</h1>
 
 <div id="chat-container">
   <div id="messages-container">
-    <div id="rules">⚠️ 此為12人制測試聊天室</div>
     <div id="messages"></div>
   </div>
   <div id="online-users">
-    <h3>心動夥伴</h3>
     <ul id="user-list"></ul>
   </div>
 </div>
 
 <div id="input-container">
-  <input type="text" id="nickname" placeholder="暱稱UID">
+  <input type="text" id="nickname" placeholder="暱稱">
   <input type="text" id="input" placeholder="輸入訊息">
   <button id="send">送出</button>
 </div>
 
 <script>
-  const ws = new WebSocket("wss://hotopiya.onrender.com");
+  // 自動判斷是否是本機環境，然後使用不同的 WebSocket 連接地址
+  const wsUrl = location.hostname === "localhost" ? "ws://localhost:3000" : "wss://hotopiya.onrender.com";
+  const ws = new WebSocket(wsUrl);
 
   const messagesDiv = document.getElementById('messages');
   const userList = document.getElementById('user-list');
-
   let myNickname = "";
 
-  ws.onopen = ()=>console.log("✅ 已連線到 Render WebSocket");
-  ws.onerror = e=>console.log("❌ WebSocket錯誤",e);
+  ws.onopen = ()=>console.log("✅ 已連線到 WebSocket");
+  ws.onerror = e => console.log("❌ WebSocket錯誤", e);
   ws.onclose = ()=>console.log("⚠️ 連線關閉");
 
   ws.onmessage = event => {
@@ -60,19 +54,19 @@
 
     // 在線名單
     if(data.onlineUsers){
-      userList.innerHTML="";
-      data.onlineUsers.forEach(u=>{
-        const li=document.createElement('li');
-        li.textContent=u;
+      userList.innerHTML = "";
+      data.onlineUsers.forEach(u => {
+        const li = document.createElement('li');
+        li.textContent = u;
         userList.appendChild(li);
       });
     }
 
     // 訊息
     if(data.text){
-      const p=document.createElement('p');
-      p.className='message';
-      p.innerHTML=`<strong>${data.nickname||'系統'}：</strong> ${data.text}`;
+      const p = document.createElement('p');
+      p.className = 'message';
+      p.innerHTML = `<strong>${data.nickname || "系統"}：</strong> ${data.text}`;
       messagesDiv.appendChild(p);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
@@ -89,17 +83,15 @@
     if(!msg) return;
 
     if(ws.readyState === WebSocket.OPEN){
-      ws.send(JSON.stringify({nickname: myNickname,text: msg}));
+      ws.send(JSON.stringify({nickname: myNickname, text: msg}));
       input.value = "";
-    }else{
+    } else {
       alert("⚠️ WebSocket 尚未連線，無法傳送訊息");
     }
   }
 
   document.getElementById('send').onclick = sendMessage;
-  document.getElementById('input').addEventListener('keydown', e => {
-    if(e.key==='Enter') sendMessage();
-  });
+  document.getElementById('input').addEventListener('keydown', e => { if(e.key==="Enter") sendMessage(); });
 </script>
 
 </body>
