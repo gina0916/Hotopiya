@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>限定聊天室</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', Courier, monospace; /* 使用等寬字型 */
+      background: linear-gradient(160deg, #0d1b2a, #1b263b, #415a77); /* 高級藍黑漸層背景 */
+      color: #00FF00; /* 綠色字體 */
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 16px 0;
+      margin: 0;
+      background-color: #121212;
+      border-bottom: 1px solid #333;
+      text-shadow: 0 0 6px #00FF00;
+      font-size: 28px;
+      z-index: 1;
+    }
+
+    #chat-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #messages-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      overflow-y: auto;
+      background-color: #111; /* 深黑背景 */
+    }
+
+    #rules {
+      padding: 10px;
+      margin-bottom: 12px;
+      background-color: rgba(0, 255, 0, 0.3); /* 半透明的綠色背景 */
+      color: #00FF00;
+      font-weight: bold;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .message {
+      margin: 8px 0;
+      padding: 12px 18px;
+      border-radius: 12px;
+      background-color: transparent;
+      max-width: 70%;
+      word-wrap: break-word;
+      box-shadow: none;
+      display: flex;
+      align-items: center;
+    }
+
+    .user-msg {
+      color: #00FF00; /* 綠色文字 */
+    }
+
+    #online-users {
+      width: 220px;
+      background-color: #111; /* 深黑背景 */
+      padding: 20px;
+      border-left: 1px solid #333;
+      overflow-y: auto;
+    }
+
+    #online-users h3 {
+      margin-top: 0;
+      font-size: 18px;
+      text-align: center;
+      color: #00FF00;
+      text-shadow: 0 0 4px #00FF00;
+    }
+
+    #online-users ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    #online-users li {
+      margin: 8px 0;
+      color: #00FF00;
+      font-size: 16px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    #online-users li:hover {
+      text-shadow: 0 0 6px #00FF00;
+      cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateX(-10px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    #input-container {
+      display: flex;
+      border-top: 1px solid #333;
+      background-color: #121212;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    #nickname, #input {
+      padding: 10px;
+      margin-right: 12px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 16px;
+      background-color: #2a2a3a;
+      color: #00FF00; /* 綠色文字 */
+    }
+
+    #nickname { max-width: 160px; }
+
+    #send {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #00FF00;
+      color: black;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+
+    #send:hover {
+      background-color: #00cc00;
+      transform: scale(1.05);
+      box-shadow: 0 0 10px #00FF00;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>澆水團臨時聊天室</h1>
+
+  <div id="chat-container">
+    <div id="messages-container">
+      <div id="rules">此為12人制測試聊天室，進來打暱稱訊息，我確認完最後會打上鎮號密碼，無法打字代表已滿人</div>
+      <div id="messages"></div>
+    </div>
+
+    <div id="online-users">
+      <h3>心動夥伴</h3>
+      <ul id="user-list"></ul>
+    </div>
+  </div>
+
+  <div id="input-container">
+    <input type="text" id="nickname" placeholder="暱稱UID">
+    <input type="text" id="input" placeholder="輸入訊息">
+    <button id="send">送出</button>
+  </div>
+
+  <script>
+    const ws = new WebSocket('ws://localhost:3000');
+    const messagesDiv = document.getElementById('messages');
+    const userList = document.getElementById('user-list');
+
+    const colors = [
+      "#FF4D4D","#FF8C00","#FFD700","#7CFC00",
+      "#00CED1","#1E90FF","#9400D3","#FF1493",
+      "#00FF7F","#FF4500","#00BFFF","#FF69B4"
+    ];
+
+    let myNickname = "";
+    let myColor = "#00FF00"; // 統一綠色
+    const nicknameColors = {};
+
+    ws.onopen = () => console.log("已連線到伺服器");
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+
+      if(data.system && data.onlineUsers){
+        updateUserList(data.onlineUsers);
+      }
+
+      if(data.text && !data.system){
+        const splitIndex = data.text.indexOf(":");
+        if(splitIndex !== -1){
+          const name = data.text.slice(0, splitIndex);
+          const msg = data.text.slice(splitIndex + 1);
+
+          const p = document.createElement('p');
+          p.className = 'message user-msg';
+
+          p.innerHTML = `<strong>${name}：</strong> ${msg}`;
+          messagesDiv.appendChild(p);
+        }
+      }
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    };
+
+    function updateUserList(users){
+      userList.innerHTML = "";
+      users.forEach(u => {
+        const li = document.createElement('li');
+        li.style.color = myColor;
+        li.textContent = u;
+        userList.appendChild(li);
+      });
+    }
+
+    function sendMessage(){
+      let nickname = document.getElementById('nickname').value.trim() || "匿名";
+      if(!myNickname) {
+        myNickname = nickname;
+      }
+      const msg = document.getElementById('input').value.trim();
+      if(msg){
+        ws.send(JSON.stringify({ nickname: myNickname, text: msg, color: myColor }));
+        document.getElementById('input').value = '';
+      }
+    }
+
+    document.getElementById('send').onclick = sendMessage;
+    document.getElementById('input').addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
