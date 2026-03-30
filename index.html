@@ -2,14 +2,14 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Viewport 設置 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 確保響應式 -->
   <title>澆水團聊天室</title>
   <style>
     body {
       margin: 0;
       font-family: 'Courier New', Courier, monospace;
-      background: linear-gradient(160deg, #0d1b2a, #1b263b, #415a77);
-      color: #00FF00;
+      background: linear-gradient(160deg, #0d1b2a, #1b263b, #415a77); /* 高級藍黑漸層背景 */
+      color: #00FF00; /* 綠色字體 */
       display: flex;
       flex-direction: column;
       height: 100vh;
@@ -40,13 +40,13 @@
       flex-direction: column;
       padding: 16px;
       overflow-y: auto;
-      background-color: #111;
+      background-color: #111; /* 深黑背景 */
     }
 
     #rules {
       padding: 10px;
       margin-bottom: 12px;
-      background-color: rgba(0, 255, 0, 0.3);
+      background-color: rgba(0, 255, 0, 0.3); /* 半透明的綠色背景 */
       color: #00FF00;
       font-weight: bold;
       border-radius: 8px;
@@ -66,12 +66,12 @@
     }
 
     .user-msg {
-      color: #00FF00;
+      color: #00FF00; /* 綠色文字 */
     }
 
     #online-users {
       width: 220px;
-      background-color: #111;
+      background-color: #111; /* 深黑背景 */
       padding: 20px;
       border-left: 1px solid #333;
       overflow-y: auto;
@@ -147,7 +147,7 @@
       box-shadow: 0 0 10px #00FF00;
     }
 
-    /* 媒體查詢：螢幕寬度小於 768px（手機）時調整 */
+    /* 媒體查詢：螢幕寬度小於 768px（平板或手機）時調整 */
     @media (max-width: 768px) {
       #online-users {
         width: 100%;
